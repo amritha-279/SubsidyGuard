@@ -1,0 +1,66 @@
+{
+  "_comment": "Recommended fertilizer in kg per acre. Source: ICAR / State Agriculture Dept guidelines.",
+  "crops": {
+    "paddy": {
+      "Urea":  { "Kharif": 65, "Rabi": 55, "Summer": 50 },
+      "DAP":   { "Kharif": 50, "Rabi": 45, "Summer": 40 },
+      "MOP":   { "Kharif": 33, "Rabi": 27, "Summer": 25 },
+      "SSP":   { "Kharif": 100,"Rabi": 90, "Summer": 80 }
+    },
+    "wheat": {
+      "Urea":  { "Kharif": 60, "Rabi": 65, "Summer": 55 },
+      "DAP":   { "Kharif": 45, "Rabi": 50, "Summer": 40 },
+      "MOP":   { "Kharif": 27, "Rabi": 30, "Summer": 25 },
+      "SSP":   { "Kharif": 90, "Rabi": 100,"Summer": 80 }
+    },
+    "cotton": {
+      "Urea":  { "Kharif": 80, "Rabi": 70, "Summer": 65 },
+      "DAP":   { "Kharif": 60, "Rabi": 55, "Summer": 50 },
+      "MOP":   { "Kharif": 40, "Rabi": 35, "Summer": 30 },
+      "SSP":   { "Kharif": 120,"Rabi": 110,"Summer": 100}
+    },
+    "maize": {
+      "Urea":  { "Kharif": 70, "Rabi": 60, "Summer": 55 },
+      "DAP":   { "Kharif": 55, "Rabi": 50, "Summer": 45 },
+      "MOP":   { "Kharif": 33, "Rabi": 27, "Summer": 25 },
+      "SSP":   { "Kharif": 110,"Rabi": 100,"Summer": 90 }
+    },
+    "sugarcane": {
+      "Urea":  { "Kharif": 130,"Rabi": 120,"Summer": 110},
+      "DAP":   { "Kharif": 85, "Rabi": 80, "Summer": 75 },
+      "MOP":   { "Kharif": 67, "Rabi": 60, "Summer": 55 },
+      "SSP":   { "Kharif": 170,"Rabi": 160,"Summer": 150}
+    },
+    "groundnut": {
+      "Urea":  { "Kharif": 20, "Rabi": 18, "Summer": 15 },
+      "DAP":   { "Kharif": 50, "Rabi": 45, "Summer": 40 },
+      "MOP":   { "Kharif": 33, "Rabi": 30, "Summer": 27 },
+      "SSP":   { "Kharif": 100,"Rabi": 90, "Summer": 80 }
+    },
+    "soybean": {
+      "Urea":  { "Kharif": 20, "Rabi": 18, "Summer": 15 },
+      "DAP":   { "Kharif": 50, "Rabi": 45, "Summer": 40 },
+      "MOP":   { "Kharif": 33, "Rabi": 30, "Summer": 27 },
+      "SSP":   { "Kharif": 100,"Rabi": 90, "Summer": 80 }
+    },
+    "sunflower": {
+      "Urea":  { "Kharif": 55, "Rabi": 50, "Summer": 45 },
+      "DAP":   { "Kharif": 50, "Rabi": 45, "Summer": 40 },
+      "MOP":   { "Kharif": 33, "Rabi": 30, "Summer": 27 },
+      "SSP":   { "Kharif": 100,"Rabi": 90, "Summer": 80 }
+    }
+  },
+  "thresholds": {
+    "green_max_pct": 105,
+    "yellow_max_pct": 120,
+    "cluster_window_mins": 60,
+    "cluster_count": 3,
+    "frequent_days": 30,
+    "frequent_count": 2
+  },
+  "season_months": {
+    "Kharif": [6, 7, 8, 9, 10],
+    "Rabi":   [11, 12, 1, 2, 3],
+    "Summer": [4, 5]
+  }
+}

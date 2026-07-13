@@ -26,7 +26,7 @@ export default function POSPage() {
     setLoading(true);
     setResult(null);
     try {
-      const response = await axios.post('http://localhost:5000/api/transactions/verify', formData);
+      const response = await axios.post(`\${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/transactions/verify`, formData);
       setResult(response.data);
     } catch (error) {
       console.error("Error verifying transaction", error);
