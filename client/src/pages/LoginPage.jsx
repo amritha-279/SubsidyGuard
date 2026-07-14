@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ShieldAlert, User, Lock, Eye, EyeOff, Mail, ArrowLeft, AlertCircle, CheckCircle, Loader2, LogIn, Leaf } from 'lucide-react';
 import subBg from '../assets/sub.png';
+import api from '../api.js';
 
 const inputCls = 'w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition bg-white/90 placeholder-gray-400';
 const pwCls    = 'w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition bg-white/90 placeholder-gray-400';
@@ -40,11 +41,9 @@ function ForgotFlow({ accentColor, onBack }) {
   const handleSendOtp = async e => {
     e.preventDefault(); setError(''); setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/forgot-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error); return; }
+      await api.post('/api/auth/forgot-password', { email });
       setStep(2);
-    } catch { setError('Server error. Please try again.'); }
+    } catch (err) { setError(err.response?.data?.error || 'Server error. Please try again.'); }
     finally { setLoading(false); }
   };
 
@@ -54,11 +53,9 @@ function ForgotFlow({ accentColor, onBack }) {
     if (newPw.length < 6) { setError('Minimum 6 characters required.'); return; }
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/reset-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, otp, newPassword: newPw }) });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error); return; }
+      await api.post('/api/auth/reset-password', { email, otp, newPassword: newPw });
       setStep(3);
-    } catch { setError('Server error. Please try again.'); }
+    } catch (err) { setError(err.response?.data?.error || 'Server error. Please try again.'); }
     finally { setLoading(false); }
   };
 
@@ -148,13 +145,12 @@ export default function LoginPage() {
     if (!officerForm.username || !officerForm.password) { setOfficerError('Please enter your username and password.'); return; }
     setOfficerLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: officerForm.username, password: officerForm.password }) });
-      const data = await res.json();
-      if (!res.ok) { setOfficerError(data.error || 'Invalid credentials.'); return; }
+      const res = await api.post('/api/auth/login', { email: officerForm.username, password: officerForm.password });
+      const data = res.data;
       if (data.user.role !== 'OFFICER') { setOfficerError('Access denied. Not an officer account.'); return; }
       localStorage.setItem('subsidy_user', JSON.stringify({ role: 'OFFICER', name: data.user.name, id: data.user.id, token: data.token }));
       navigate('/admin');
-    } catch { setOfficerError('Server error. Please try again.'); }
+    } catch (err) { setOfficerError(err.response?.data?.error || 'Server error. Please try again.'); }
     finally { setOfficerLoading(false); }
   };
 
@@ -163,18 +159,16 @@ export default function LoginPage() {
     if (!retailerForm.email || !retailerForm.password) { setRetailerError('Please enter your email and password.'); return; }
     setRetailerLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: retailerForm.email, password: retailerForm.password }) });
-      const data = await res.json();
-      if (!res.ok) {
-        const msg = data.error || '';
-        if (msg.toLowerCase().includes('pending')) setRetailerError('Your account is pending Agriculture Officer approval.');
-        else if (msg.toLowerCase().includes('rejected')) setRetailerError('Your account has been rejected. Contact the Agriculture Officer.');
-        else setRetailerError(msg || 'Invalid email or password.');
-        return;
-      }
+      const res = await api.post('/api/auth/login', { email: retailerForm.email, password: retailerForm.password });
+      const data = res.data;
       localStorage.setItem('retailer_user', JSON.stringify({ role: 'RETAILER', ...data.user, token: data.token }));
       navigate('/retailer/dashboard');
-    } catch { setRetailerError('Server error. Please try again.'); }
+    } catch (err) { 
+      const msg = err.response?.data?.error || '';
+      if (msg.toLowerCase().includes('pending')) setRetailerError('Your account is pending Agriculture Officer approval.');
+      else if (msg.toLowerCase().includes('rejected')) setRetailerError('Your account has been rejected. Contact the Agriculture Officer.');
+      else setRetailerError(msg || 'Invalid email or password.');
+    }
     finally { setRetailerLoading(false); }
   };
 

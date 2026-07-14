@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Activity, Package, CheckCircle, Clock, ShieldOff, Users, Warehouse, TrendingUp, AlertTriangle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import axios from 'axios';
+import api from '../../api.js';
+
 
 const RISK_COLORS = ['#10b981', '#f59e0b', '#ef4444'];
 const FERT_COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'];
@@ -29,7 +30,7 @@ export default function RetailerDashboard() {
   const retailerId = retailerUser.shopId || retailerUser.id || '';
 
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/stats`, { params: { retailer_id: retailerId } })
+    api.get(`/api/admin/stats`, { params: { retailer_id: retailerId } })
       .then(res => {
         const { stats: s, transactions } = res.data;
         setStats(s);

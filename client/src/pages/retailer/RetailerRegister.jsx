@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+
 import { Store, MapPin, Lock, CheckCircle, AlertCircle, Loader2, FileText } from 'lucide-react';
 import './retailer.css';
 import subBg from '../../assets/sub.png';
+import api from '../../api.js';
 
 const DISTRICTS = [
   'Ariyalur', 'Chengalpattu', 'Chennai', 'Coimbatore', 'Cuddalore',
@@ -43,7 +44,7 @@ export default function RetailerRegister() {
     if (form.mobile.length !== 10) { setError('Mobile number must be 10 digits.'); return; }
     setLoading(true);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/auth/register`, {
+      await api.post(`/api/auth/register`, {
         name: form.ownerName,
         email: form.email,
         password: form.password,

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
-import axios from 'axios';
+
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend, RadarChart, Radar, PolarGrid, PolarAngleAxis } from 'recharts';
+import api from '../../api.js';
 
 const API = `${import.meta.env.VITE_API_URL || ''}/api/admin`;
 const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#3b82f6'];
@@ -27,11 +28,11 @@ export default function AnalyticsPage() {
   const fetchAll = async () => {
     try {
       const [trendsRes, retailerRes, farmerRes, heatmapRes, statsRes] = await Promise.all([
-        axios.get(`${API}/monthly-trends`),
-        axios.get(`${API}/retailer-risk`),
-        axios.get(`${API}/farmer-risk`),
-        axios.get(`${API}/village-heatmap`),
-        axios.get(`${API}/stats`)
+        api.get(`/api/admin/monthly-trends`),
+        api.get(`/api/admin/retailer-risk`),
+        api.get(`/api/admin/farmer-risk`),
+        api.get(`/api/admin/village-heatmap`),
+        api.get(`/api/admin/stats`)
       ]);
       setTrends(trendsRes.data.trends);
       setRetailerRisk(retailerRes.data.rankings);

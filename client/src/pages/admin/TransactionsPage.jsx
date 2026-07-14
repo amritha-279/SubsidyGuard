@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
-import axios from 'axios';
+
 import { Search, Eye, X } from 'lucide-react';
+import api from '../../api.js';
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState([]);
@@ -38,7 +39,7 @@ export default function TransactionsPage() {
 
   const fetchTransactions = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/stats`);
+      const res = await api.get(`/api/admin/stats`);
       setTransactions(res.data.transactions || []);
       setFiltered(res.data.transactions || []);
     } catch (e) { console.error(e); }

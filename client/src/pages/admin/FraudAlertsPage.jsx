@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
-import axios from 'axios';
+
 import { AlertTriangle, ShieldAlert, Users, RefreshCw, TrendingUp, Repeat } from 'lucide-react';
+import api from '../../api.js';
 
 const API = `${import.meta.env.VITE_API_URL || ''}/api/admin`;
 
@@ -39,8 +40,8 @@ export default function FraudAlertsPage() {
   const fetchAlerts = async () => {
     try {
       const [statsRes, clusterRes] = await Promise.all([
-        axios.get(`${API}/stats`),
-        axios.get(`${API}/clusters`)
+        api.get(`/api/admin/stats`),
+        api.get(`/api/admin/clusters`)
       ]);
       const flagged = statsRes.data.transactions.filter(t => t.status !== 'GREEN');
       setAlerts(flagged);
@@ -51,7 +52,7 @@ export default function FraudAlertsPage() {
 
   const setStatus = async (id, status) => {
     try {
-      await axios.patch(`${API}/transaction-alert-status/${id}`, { status });
+      await api.patch(`/api/admin/transaction-alert-status/${id}`, { status });
       setAlerts(prev => prev.map(a => a.transactionId === id ? { ...a, investigationStatus: status } : a));
     } catch (e) {
       console.error(e);

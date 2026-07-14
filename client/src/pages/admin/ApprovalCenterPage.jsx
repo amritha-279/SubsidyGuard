@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
-import axios from 'axios';
+
 import { CheckCircle2, XCircle, Clock, User, Store } from 'lucide-react';
+import api from '../../api.js';
 
 const API = `${import.meta.env.VITE_API_URL || ''}/api/admin`;
 
@@ -24,7 +25,7 @@ export default function ApprovalCenterPage() {
   const fetchRetailers = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API}/pending-retailers`);
+      const res = await api.get(`/api/admin/pending-retailers`);
       const all = res.data.all || [];
       setPending(all.filter(r => r.status === 'PENDING'));
       setApproved(all.filter(r => r.status === 'APPROVED'));
@@ -39,7 +40,7 @@ export default function ApprovalCenterPage() {
   const handleAction = async (id, status) => {
     setActing(id + status);
     try {
-      await axios.patch(`${API}/retailer-status/${id}`, { status });
+      await api.patch(`/api/admin/retailer-status/${id}`, { status });
       await fetchRetailers();
     } catch (e) {
       alert('Action failed: ' + (e.response?.data?.error || e.message));

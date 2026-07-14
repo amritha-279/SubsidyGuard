@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate, Outlet, useLocation } from 'react-router-dom';
+import api from '../../api.js';
 import {
   LayoutDashboard, PlusCircle, FileText, Clock, Search,
   Package, Bell, User, HelpCircle, LogOut, ShieldAlert,
@@ -48,8 +49,8 @@ export default function RetailerLayout() {
   // Always fetch fresh user data from DB
   useEffect(() => {
     if (!token) return;
-    fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
+    api.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.data)
       .then(data => {
         setDbUser(data);
         // keep localStorage in sync

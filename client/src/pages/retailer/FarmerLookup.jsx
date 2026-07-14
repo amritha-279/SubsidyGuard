@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import axios from 'axios';
+
 import { Search } from 'lucide-react';
+import api from '../../api.js';
 
 const riskBadge = r => {
   if (r === 'HIGH RISK') return <span className="inline-block whitespace-nowrap px-2 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700">{r}</span>;
@@ -19,7 +20,7 @@ export default function FarmerLookup() {
     e.preventDefault();
     setLoading(true); setFarmer(null); setNotFound(false);
     try {
-      const res = await axios.get(`/api/transactions/farmer-lookup?type=${searchType}&query=${query}`);
+      const res = await api.get(`/api/transactions/farmer-lookup?type=${searchType}&query=${query}`);
       setFarmer(res.data);
     } catch {
       setNotFound(true);

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { User, X } from 'lucide-react';
+import api from '../../api.js';
 
 export default function RetailerProfile() {
   const [profile, setProfile] = useState(null);
@@ -13,19 +14,18 @@ export default function RetailerProfile() {
   const token = JSON.parse(localStorage.getItem('retailer_user') || '{}').token;
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
+    api.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.data)
       .then(data => { setProfile(data); setEditForm(data); })
       .finally(() => setLoading(false));
   }, []);
 
   const handleSave = async () => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/me`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(editForm),
-    });
-    if (!res.ok) { alert('Failed to save. Please try again.'); return; }
+    try {
+      await api.patch('/api/auth/me', editForm, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (err) { alert('Failed to save. Please try again.'); return; }
     // update localStorage so sidebar reflects new name/shop
     const stored = JSON.parse(localStorage.getItem('retailer_user') || '{}');
     localStorage.setItem('retailer_user', JSON.stringify({ ...stored, ...editForm }));
@@ -36,13 +36,12 @@ export default function RetailerProfile() {
   const handlePwSave = async () => {
     if (pw.newPw !== pw.confirm) { alert('Passwords do not match.'); return; }
     if (pw.newPw.length < 6) { alert('Minimum 6 characters required.'); return; }
-    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/change-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ currentPassword: pw.current, newPassword: pw.newPw }),
-    });
-    const data = await res.json();
-    if (!res.ok) { alert(data.error || 'Failed to change password.'); return; }
+    try {
+      await api.post('/api/auth/change-password', 
+        { currentPassword: pw.current, newPassword: pw.newPw },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch (err) { alert(err.response?.data?.error || 'Failed to change password.'); return; }
     setPwModal(false); setPw({ current: '', newPw: '', confirm: '' });
     alert('Password changed successfully.');
   };

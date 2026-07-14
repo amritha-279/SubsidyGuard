@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+
 import { Bell, AlertTriangle, ShieldAlert, CheckCircle2, Info, Users } from 'lucide-react';
+import api from '../../api.js';
 
 const API = `${import.meta.env.VITE_API_URL || ''}/api/admin`;
 
@@ -13,9 +14,9 @@ export default function NotificationsPage() {
   const fetchNotifications = async () => {
     try {
       const [statsRes, clusterRes, stateRes] = await Promise.all([
-        axios.get(`${API}/stats`),
-        axios.get(`${API}/clusters`),
-        axios.get(`${import.meta.env.VITE_API_URL || ''}/api/notifications/ADMIN`)
+        api.get(`/api/admin/stats`),
+        api.get(`/api/admin/clusters`),
+        api.get(`/api/notifications/ADMIN`)
       ]);
       const notifs = [];
       const states = stateRes.data.states || [];
@@ -49,7 +50,7 @@ export default function NotificationsPage() {
 
   const markRead = async (id) => {
     try {
-      await axios.patch(`${import.meta.env.VITE_API_URL || ''}/api/notifications/ADMIN/${id}`, { isRead: true });
+      await api.patch(`/api/notifications/ADMIN/${id}`, { isRead: true });
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
     } catch (e) { console.error('Failed to mark read', e); }
   };
@@ -58,7 +59,7 @@ export default function NotificationsPage() {
     try {
       const unreadIds = notifications.filter(n => !n.read).map(n => n.id);
       if (unreadIds.length === 0) return;
-      await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/notifications/ADMIN/mark-all-read`, { notificationIds: unreadIds });
+      await api.post(`/api/notifications/ADMIN/mark-all-read`, { notificationIds: unreadIds });
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     } catch (e) { console.error('Failed to mark all read', e); }
   };

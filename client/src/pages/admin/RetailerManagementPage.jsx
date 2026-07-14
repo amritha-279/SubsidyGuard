@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
-import axios from 'axios';
+
 import { Search, ShieldAlert, CheckCircle2, XCircle, Eye, X, Send } from 'lucide-react';
+import api from '../../api.js';
 
 const API = `${import.meta.env.VITE_API_URL || ''}/api/admin`;
 
@@ -21,8 +22,8 @@ export default function RetailerManagementPage() {
   const fetchData = async () => {
     try {
       const [riskRes, statsRes] = await Promise.all([
-        axios.get(`${API}/retailer-risk`),
-        axios.get(`${API}/stats`)
+        api.get(`/api/admin/retailer-risk`),
+        api.get(`/api/admin/stats`)
       ]);
       setRetailers(riskRes.data.rankings);
       setFiltered(riskRes.data.rankings.filter(r => (r.retailerId || '').toLowerCase().includes(search.toLowerCase())));
@@ -57,7 +58,7 @@ export default function RetailerManagementPage() {
 
   useEffect(() => {
     if (selected && selected.userId) {
-      axios.get(`${import.meta.env.VITE_API_URL || ''}/api/inventory/${selected.userId}`)
+      api.get(`/api/inventory/${selected.userId}`)
         .then(res => setSelectedInventory(res.data.inventory || []))
         .catch(err => console.error('Failed to fetch inventory', err));
     }
@@ -68,7 +69,7 @@ export default function RetailerManagementPage() {
   const handleSuspendConfirm = async () => {
     if (!suspendModal) return;
     try {
-      const res = await axios.patch(`${API}/retailer-suspend/${suspendModal.retailerId}`, {
+      const res = await api.patch(`/api/admin/retailer-suspend/${suspendModal.retailerId}`, {
         reason: suspendReason,
         remarks: suspendRemarks
       });
@@ -85,7 +86,7 @@ export default function RetailerManagementPage() {
   const handleAddNote = async () => {
     if (!newNote.trim() || !selected) return;
     try {
-      const res = await axios.patch(`${API}/retailer-notes/${selected.retailerId}`, { note: newNote, officerName: 'Agriculture Officer' });
+      const res = await api.patch(`/api/admin/retailer-notes/${selected.retailerId}`, { note: newNote, officerName: 'Agriculture Officer' });
       setSelected(prev => ({ ...prev, officerNotes: res.data.officerNotes }));
       setRetailers(prev => prev.map(r => r.retailerId === selected.retailerId ? { ...r, officerNotes: res.data.officerNotes } : r));
       setNewNote('');

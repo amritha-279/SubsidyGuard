@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
-import axios from 'axios';
 import { ShieldAlert, AlertTriangle, Filter, Users, Activity, ExternalLink, Brain, TrendingUp, MapPin } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -9,7 +8,7 @@ import {
 import { Link } from 'react-router-dom';
 import { CheckCircle, Clock, ShieldOff } from 'lucide-react';
 
-const API = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api/admin` : '/api/admin';
+// AdminDashboard.jsx
 const STATUS_COLORS = { GREEN: '#10b981', YELLOW: '#f59e0b', RED: '#ef4444' };
 
 export default function AdminDashboard() {
@@ -45,11 +44,11 @@ export default function AdminDashboard() {
     try {
       const params = new URLSearchParams(f).toString();
       const [statsRes, retailerRes, farmerRes, trendsRes, heatmapRes] = await Promise.all([
-        axios.get(`${API}/stats?${params}`),
-        axios.get(`${API}/retailer-risk`),
-        axios.get(`${API}/farmer-risk`),
-        axios.get(`${API}/monthly-trends`),
-        axios.get(`${API}/village-heatmap`)
+        api.get(`/api/admin/stats?${params}`),
+        api.get(`/api/admin/retailer-risk`),
+        api.get(`/api/admin/farmer-risk`),
+        api.get(`/api/admin/monthly-trends`),
+        api.get(`/api/admin/village-heatmap`)
       ]);
       setData(statsRes.data);
       setRetailerRisk(retailerRes.data.rankings);

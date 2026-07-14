@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
-import axios from 'axios';
+
 import { AlertTriangle, MapPin, Users, Activity, Eye } from 'lucide-react';
+import api from '../api.js';
 
 export default function ClustersPage() {
   const [clusters, setClusters] = useState([]);
@@ -21,7 +22,7 @@ export default function ClustersPage() {
 
   const fetchClusters = async () => {
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/clusters`);
+      const res = await api.get(`/api/admin/clusters`);
       setClusters(res.data.clusters);
     } catch (error) {
       console.error(error);

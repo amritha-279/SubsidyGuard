@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+
 import { Eye, EyeOff, ArrowLeft, Mail, Lock, LogIn, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import './retailer.css';
+import api from '../../api.js';
 
 function ForgotFlow({ onBack }) {
   const [step, setStep] = useState(1);
@@ -17,7 +18,7 @@ function ForgotFlow({ onBack }) {
   const handleSendOtp = async e => {
     e.preventDefault(); setError(''); setLoading(true);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/auth/forgot-password`, { email });
+      await api.post(`/api/auth/forgot-password`, { email });
       setStep(2);
     } catch (err) {
       setError(err.response?.data?.error || 'Server error. Please try again.');
@@ -30,7 +31,7 @@ function ForgotFlow({ onBack }) {
     if (newPw.length < 6) { setError('Minimum 6 characters required.'); return; }
     setLoading(true);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/auth/reset-password`, { email, otp, newPassword: newPw });
+      await api.post(`/api/auth/reset-password`, { email, otp, newPassword: newPw });
       setStep(3);
     } catch (err) {
       setError(err.response?.data?.error || 'Server error. Please try again.');
@@ -129,7 +130,7 @@ export default function RetailerLogin() {
   const handleSubmit = async e => {
     e.preventDefault(); setError(''); setPendingMsg(''); setLoading(true);
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/auth/login`, { identifier: form.identifier, password: form.password });
+      const res = await api.post(`/api/auth/login`, { identifier: form.identifier, password: form.password });
       const { user, token } = res.data;
       localStorage.setItem('retailer_user', JSON.stringify({ ...user, token }));
       navigate('/retailer/dashboard');

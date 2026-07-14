@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Clock, CheckCircle, XCircle, X } from 'lucide-react';
-import axios from 'axios';
+import api from '../../api.js';
+
 
 const statusBadge = s => {
   const m = { PENDING: 'bg-yellow-100 text-yellow-700', YELLOW: 'bg-yellow-100 text-yellow-700', GREEN: 'bg-green-100 text-green-700', RED: 'bg-red-100 text-red-700' };
@@ -17,7 +18,7 @@ export default function PendingApprovals() {
   const { shopId: retailerId } = JSON.parse(localStorage.getItem('retailer_user') || '{}');
 
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/stats`, { params: { retailer_id: retailerId } })
+    api.get(`/api/admin/stats`, { params: { retailer_id: retailerId } })
       .then(res => {
         const flagged = (res.data.transactions || []).filter(t => t.status !== 'GREEN');
         setTransactions(flagged);

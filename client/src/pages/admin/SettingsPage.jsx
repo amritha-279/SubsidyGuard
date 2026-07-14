@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Settings, User, Lock, Bell, Sliders, Save, CheckCircle } from 'lucide-react';
+import api from '../../api.js';
 
 export default function SettingsPage() {
   const token = JSON.parse(localStorage.getItem('subsidy_user') || '{}').token;
@@ -11,8 +12,8 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => r.json())
+    api.get('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.data)
       .then(data => {
         setProfile({
           name:     data.name     || '',
@@ -27,29 +28,27 @@ export default function SettingsPage() {
   const flash = (section) => { setSaved(section); setTimeout(() => setSaved(''), 2500); };
 
   const handleSaveProfile = async () => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/me`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify(profile),
-    });
-    if (!res.ok) { alert('Failed to save profile.'); return; }
-    const stored = JSON.parse(localStorage.getItem('subsidy_user') || '{}');
-    localStorage.setItem('subsidy_user', JSON.stringify({ ...stored, name: profile.name }));
-    flash('profile');
+    try {
+      await api.patch('/api/auth/me', profile, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const stored = JSON.parse(localStorage.getItem('subsidy_user') || '{}');
+      localStorage.setItem('subsidy_user', JSON.stringify({ ...stored, name: profile.name }));
+      flash('profile');
+    } catch (err) { alert('Failed to save profile.'); }
   };
 
   const handleSavePassword = async () => {
     if (passwords.newPass !== passwords.confirm) { alert('Passwords do not match.'); return; }
     if (passwords.newPass.length < 6) { alert('Minimum 6 characters required.'); return; }
-    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/change-password`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ currentPassword: passwords.current, newPassword: passwords.newPass }),
-    });
-    const data = await res.json();
-    if (!res.ok) { alert(data.error || 'Failed to change password.'); return; }
-    setPasswords({ current: '', newPass: '', confirm: '' });
-    flash('password');
+    try {
+      await api.post('/api/auth/change-password', 
+        { currentPassword: passwords.current, newPassword: passwords.newPass },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setPasswords({ current: '', newPass: '', confirm: '' });
+      flash('password');
+    } catch (err) { alert(err.response?.data?.error || 'Failed to change password.'); }
   };
 
   if (loading) return <div className="p-8 text-gray-500">Loading...</div>;

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+
 import { History } from 'lucide-react';
+import api from '../../api.js';
 
 export default function StockHistory() {
   const [history, setHistory] = useState([]);
@@ -10,7 +11,7 @@ export default function StockHistory() {
 
   useEffect(() => {
     if (!retailerId) return;
-    axios.get(`/api/inventory/history/${retailerId}`)
+    api.get(`/api/inventory/history/${retailerId}`)
       .then(res => setHistory(res.data.history || []))
       .catch(console.error)
       .finally(() => setLoading(false));

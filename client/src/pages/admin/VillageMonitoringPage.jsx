@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
-import axios from 'axios';
+
 import { MapPin, AlertTriangle, Users, ShieldAlert, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import api from '../../api.js';
 
 const API = `${import.meta.env.VITE_API_URL || ''}/api/admin`;
 
@@ -22,8 +23,8 @@ export default function VillageMonitoringPage() {
   const fetchData = async () => {
     try {
       const [heatRes, clusterRes] = await Promise.all([
-        axios.get(`${API}/village-heatmap`),
-        axios.get(`${API}/clusters`)
+        api.get(`/api/admin/village-heatmap`),
+        api.get(`/api/admin/clusters`)
       ]);
       setHeatmap(heatRes.data.heatmap);
       setClusters(clusterRes.data.clusters);

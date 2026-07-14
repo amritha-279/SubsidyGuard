@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+
 import { Package, MapPin, User, Leaf, ShieldAlert } from 'lucide-react';
 import VerificationPanel from '../components/VerificationPanel';
 

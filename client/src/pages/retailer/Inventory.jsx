@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AlertTriangle, Package, X } from 'lucide-react';
-import axios from 'axios';
+
 import { io } from 'socket.io-client';
+import api from '../../api.js';
 
 export default function Inventory() {
   const [stock, setStock] = useState([]);
@@ -23,7 +24,7 @@ export default function Inventory() {
 
   const fetchStock = useCallback(() => {
     if (!retailerId) return;
-    axios.get(`/api/inventory/${retailerId}`)
+    api.get(`/api/inventory/${retailerId}`)
       .then(res => setStock(res.data.inventory))
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -53,7 +54,7 @@ export default function Inventory() {
     
     try {
       if (modal.type === 'add' || modal.type === 'add_new') {
-        await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/inventory/add`, {
+        await api.post(`/api/inventory/add`, {
           retailerId,
           fertilizer: modal.type === 'add_new' ? formData.fertilizer : modal.item.fertilizer,
           quantity: formData.quantity,
@@ -64,7 +65,7 @@ export default function Inventory() {
           remarks: `Invoice: ${formData.invoiceNumber || 'N/A'}, Date: ${formData.purchaseDate || 'N/A'}. ${formData.remarks}`
         });
       } else {
-        await axios.put(`${import.meta.env.VITE_API_URL || ''}/api/inventory/update`, {
+        await api.put(`/api/inventory/update`, {
           retailerId,
           fertilizer: modal.item.fertilizer,
           quantity: formData.quantity,

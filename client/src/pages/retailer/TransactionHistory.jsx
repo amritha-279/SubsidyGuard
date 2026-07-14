@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Eye } from 'lucide-react';
-import axios from 'axios';
+import api from '../../api.js';
+
 
 const statusBadge = s => {
   const map = {
@@ -23,7 +24,7 @@ export default function TransactionHistory() {
   const retailerId = retailerUser.shopId || retailerUser.id || '';
 
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/stats`, { params: { retailer_id: retailerId } })
+    api.get(`/api/admin/stats`, { params: { retailer_id: retailerId } })
       .then(res => {
         const all = res.data.transactions || [];
         setTransactions(retailerId ? all.filter(t => t.retailerId === retailerId) : all);
@@ -183,7 +184,7 @@ export default function TransactionHistory() {
                   className="btn btn-primary text-sm flex-1"
                   onClick={async () => {
                     try {
-                      await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/transactions/confirm`, { transactionId: selected.transactionId });
+                      await api.post(`/api/transactions/confirm`, { transactionId: selected.transactionId });
                       alert('Sale Completed and Stock Deducted!');
                       setSelected(null);
                       // Force a reload of the page to reflect new status

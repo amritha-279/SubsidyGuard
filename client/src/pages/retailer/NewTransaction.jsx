@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+
 import { Search, RefreshCw, CheckCircle, AlertTriangle, XCircle, Smartphone, Send } from 'lucide-react';
 import { io } from 'socket.io-client';
+import api from '../../api.js';
 
 const CROPS = ['Paddy','Wheat','Sugarcane','Banana','Coconut','Vegetables','Cotton','Maize','Groundnut','Soybean'];
 const FERTILIZERS = ['Urea','DAP','MOP','NPK (10-26-26)','NPK (12-32-16)','SSP','Zinc Sulphate','Ammonium Sulphate'];
@@ -31,7 +32,7 @@ export default function NewTransaction() {
 
   const fetchInventory = () => {
     if (!retailerId) return;
-    axios.get(`/api/inventory/${retailerId}`)
+    api.get(`/api/inventory/${retailerId}`)
       .then(res => {
         setInventory(res.data.inventory || []);
         // Re-check current selected fertilizer if any
@@ -79,7 +80,7 @@ export default function NewTransaction() {
       return;
     }
     try {
-      const res = await axios.get(`/api/transactions/farmer/${form.aadhaar}`);
+      const res = await api.get(`/api/transactions/farmer/${form.aadhaar}`);
       const f = res.data;
       const locked = [];
       setForm(p => {
@@ -120,7 +121,7 @@ export default function NewTransaction() {
         officer_approved: 0,
         frontend_recommended_qty: recommendedQty
       };
-      const res = await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/transactions/verify`, payload);
+      const res = await api.post(`/api/transactions/verify`, payload);
       const d = res.data;
       setRecommendedQty(d.recommendedQuantity ?? recommendedQty);
       const req = parseFloat(form.requestedQty);
@@ -168,7 +169,7 @@ export default function NewTransaction() {
   const handleCompleteSale = async () => {
     setCompleting(true);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/transactions/confirm`, { transactionId: savedTxnId });
+      await api.post(`/api/transactions/confirm`, { transactionId: savedTxnId });
       setSaleComplete(true);
     } catch (err) {
       alert(err.response?.data?.error || 'Could not complete sale. Please try again.');
@@ -178,7 +179,7 @@ export default function NewTransaction() {
   const handleRequestApproval = async () => {
     setRequestingApproval(true);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/transactions/request-approval`, { transactionId: savedTxnId });
+      await api.post(`/api/transactions/request-approval`, { transactionId: savedTxnId });
       setApprovalSent(true);
     } catch (err) {
       alert(err.response?.data?.error || 'Could not send request. Please try again.');

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+
 import { CheckCircle2, XCircle, Clock, FileText, AlertTriangle } from 'lucide-react';
+import api from '../../api.js';
 
 export default function TransactionApprovalsPage() {
   const [requests, setRequests] = useState([]);
@@ -12,7 +13,7 @@ export default function TransactionApprovalsPage() {
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/transaction-approvals`);
+      const res = await api.get(`/api/admin/transaction-approvals`);
       setRequests(res.data.requests || []);
     } catch (e) {
       console.error(e);
@@ -24,7 +25,7 @@ export default function TransactionApprovalsPage() {
   const handleAction = async (id, status) => {
     setActing(id + status);
     try {
-      await axios.patch(`/api/admin/transaction-approvals/${id}`, { status, remarks: `Officer ${status} this request.` });
+      await api.patch(`/api/admin/transaction-approvals/${id}`, { status, remarks: `Officer ${status} this request.` });
       await fetchRequests();
     } catch (e) {
       alert('Action failed: ' + (e.response?.data?.error || e.message));

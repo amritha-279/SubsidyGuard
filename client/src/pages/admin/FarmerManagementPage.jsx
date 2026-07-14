@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+
 import { Search, Eye, X, User, MapPin, Crop, Phone } from 'lucide-react';
+import api from '../../api.js';
 
 const riskBadge = rate => {
   const r = parseFloat(rate);
@@ -21,7 +22,7 @@ export default function FarmerManagementPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/farmers`)
+    api.get(`/api/admin/farmers`)
       .then(res => setFarmers(res.data.farmers || []))
       .catch(() => {})
       .finally(() => setLoading(false));
