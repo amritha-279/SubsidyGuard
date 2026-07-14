@@ -8,12 +8,13 @@ const RISK_COLORS = ['#10b981', '#f59e0b', '#ef4444'];
 const FERT_COLORS = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'];
 
 const riskBadge = r => {
-  const map = { GREEN: 'bg-green-100 text-green-700', YELLOW: 'bg-yellow-100 text-yellow-700', RED: 'bg-red-100 text-red-700' };
-  return <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${map[r]}`}>{r}</span>;
+  if (r === 'RED' || r === 'BLOCKED') return <span className="inline-block whitespace-nowrap px-2 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700">{r}</span>;
+  if (r === 'YELLOW') return <span className="inline-block whitespace-nowrap px-2 py-1 text-xs font-bold rounded-full bg-yellow-100 text-yellow-700">WARNING</span>;
+  return <span className="inline-block whitespace-nowrap px-2 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700">APPROVED</span>;
 };
 const statusBadge = s => {
   const map = { GREEN: 'bg-green-100 text-green-700', YELLOW: 'bg-yellow-100 text-yellow-700', RED: 'bg-red-100 text-red-700', Approved: 'bg-green-100 text-green-700', Pending: 'bg-yellow-100 text-yellow-700', Blocked: 'bg-red-100 text-red-700' };
-  return <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${map[s]}`}>{s}</span>;
+  return <span className={`inline-block whitespace-nowrap px-2 py-0.5 rounded-full text-xs font-bold ${map[s]}`}>{s}</span>;
 };
 
 export default function RetailerDashboard() {

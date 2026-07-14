@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import axios from 'axios';
 import { Search, Eye, X } from 'lucide-react';
 
@@ -10,7 +11,14 @@ export default function TransactionsPage() {
   const [filters, setFilters]           = useState({ crop_type: '', fertilizer_type: '', status: '', from_date: '', to_date: '' });
   const [selected, setSelected]         = useState(null);
 
-  useEffect(() => { fetchTransactions(); }, []);
+  useEffect(() => { 
+    fetchTransactions(); 
+    
+    const socketURL = import.meta.env.VITE_API_URL || window.location.origin;
+    const socket = io(socketURL);
+    socket.on('transaction_new', () => fetchTransactions());
+    return () => socket.disconnect();
+  }, []);
 
   useEffect(() => {
     let result = transactions;

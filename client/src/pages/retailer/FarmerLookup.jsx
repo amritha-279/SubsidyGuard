@@ -3,8 +3,9 @@ import axios from 'axios';
 import { Search } from 'lucide-react';
 
 const riskBadge = r => {
-  const m = { GREEN: 'bg-green-100 text-green-700', YELLOW: 'bg-yellow-100 text-yellow-700', RED: 'bg-red-100 text-red-700' };
-  return <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${m[r]}`}>{r}</span>;
+  if (r === 'HIGH RISK') return <span className="inline-block whitespace-nowrap px-2 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700">{r}</span>;
+  if (r === 'MEDIUM RISK') return <span className="inline-block whitespace-nowrap px-2 py-1 text-xs font-bold rounded-full bg-yellow-100 text-yellow-700">{r}</span>;
+  return <span className="inline-block whitespace-nowrap px-2 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700">{r || 'LOW RISK'}</span>;
 };
 
 export default function FarmerLookup() {

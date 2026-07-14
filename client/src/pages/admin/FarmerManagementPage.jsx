@@ -4,9 +4,9 @@ import { Search, Eye, X, User, MapPin, Crop, Phone } from 'lucide-react';
 
 const riskBadge = rate => {
   const r = parseFloat(rate);
-  if (r >= 50) return <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-red-100 text-red-700">HIGH RISK</span>;
-  if (r >= 25) return <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-yellow-100 text-yellow-700">MEDIUM</span>;
-  return <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-green-100 text-green-700">LOW RISK</span>;
+  if (r >= 50) return <span className="inline-block whitespace-nowrap px-2 py-0.5 text-xs font-bold rounded-full bg-red-100 text-red-700">HIGH RISK</span>;
+  if (r >= 25) return <span className="inline-block whitespace-nowrap px-2 py-0.5 text-xs font-bold rounded-full bg-yellow-100 text-yellow-700">MEDIUM</span>;
+  return <span className="inline-block whitespace-nowrap px-2 py-0.5 text-xs font-bold rounded-full bg-green-100 text-green-700">LOW RISK</span>;
 };
 
 const statusBadge = s => {

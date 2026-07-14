@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { FileText, Download, Calendar, Loader2, CalendarDays, BarChart2, TrendingUp, AlertTriangle, Store, ClipboardList, Eye } from 'lucide-react';
 import axios from 'axios';
 
-const API = `\${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/reports`;
+const API = `${import.meta.env.VITE_API_URL || ''}/api/admin/reports`;
 
 const REPORTS = [
   { type: 'daily',   label: 'Daily Report',    desc: 'All transactions from today',     icon: CalendarDays },

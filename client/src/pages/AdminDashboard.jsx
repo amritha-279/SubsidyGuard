@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import axios from 'axios';
 import { ShieldAlert, AlertTriangle, Filter, Users, Activity, ExternalLink, Brain, TrendingUp, MapPin } from 'lucide-react';
 import {
@@ -8,7 +9,7 @@ import {
 import { Link } from 'react-router-dom';
 import { CheckCircle, Clock, ShieldOff } from 'lucide-react';
 
-const API = `\${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin`;
+const API = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api/admin` : '/api/admin';
 const STATUS_COLORS = { GREEN: '#10b981', YELLOW: '#f59e0b', RED: '#ef4444' };
 
 export default function AdminDashboard() {
@@ -21,7 +22,23 @@ export default function AdminDashboard() {
   const [filters, setFilters] = useState({ retailer_id: '', crop_type: '', from_date: '', to_date: '' });
   const [showFilters, setShowFilters] = useState(false);
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => { 
+    fetchAll(); 
+    
+    // Set up Socket.IO listeners for real-time updates
+    const socketURL = import.meta.env.VITE_API_URL || window.location.origin;
+    const socket = io(socketURL);
+    
+    socket.on('transaction_new', () => {
+      fetchAll();
+    });
+    
+    socket.on('cluster_alert_new', () => {
+      fetchAll();
+    });
+
+    return () => socket.disconnect();
+  }, []);
 
   const fetchAll = async (f = {}) => {
     setLoading(true);
@@ -69,10 +86,12 @@ export default function AdminDashboard() {
   };
 
   const pieData = [
-    { name: 'Approved', value: data.stats.green },
-    { name: 'Warning', value: data.stats.yellow },
-    { name: 'Blocked', value: data.stats.red }
+    { name: 'Approved', value: data?.stats?.green || 0 },
+    { name: 'Warning', value: data?.stats?.yellow || 0 },
+    { name: 'Blocked', value: data?.stats?.red || 0 }
   ];
+
+  console.log('Current data state:', data);
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading Dashboard Data...</div>;
 
@@ -134,7 +153,7 @@ export default function AdminDashboard() {
           <div className="p-2 sm:p-3 bg-blue-50 rounded-lg text-blue-600 flex-shrink-0"><Activity className="w-5 h-5 sm:w-6 sm:h-6" /></div>
           <div className="min-w-0">
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-tight">Total Transactions</p>
-            <p className="text-xl sm:text-2xl font-bold text-gray-900">{data.stats.total}</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">{data?.stats?.total || 0}</p>
           </div>
         </div>
         
@@ -142,7 +161,7 @@ export default function AdminDashboard() {
           <div className="p-2 sm:p-3 bg-green-50 rounded-lg text-green-600 flex-shrink-0"><CheckCircle className="w-5 h-5 sm:w-6 sm:h-6" /></div>
           <div className="min-w-0">
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-tight">Approved (Green)</p>
-            <p className="text-xl sm:text-2xl font-bold text-gray-900">{data.stats.green}</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">{data?.stats?.green || 0}</p>
           </div>
         </div>
 
@@ -150,7 +169,7 @@ export default function AdminDashboard() {
           <div className="p-2 sm:p-3 bg-yellow-50 rounded-lg text-yellow-600 flex-shrink-0"><Clock className="w-5 h-5 sm:w-6 sm:h-6" /></div>
           <div className="min-w-0">
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-tight">Pending (Yellow)</p>
-            <p className="text-xl sm:text-2xl font-bold text-gray-900">{data.stats.yellow}</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">{data?.stats?.yellow || 0}</p>
           </div>
         </div>
 
@@ -158,7 +177,7 @@ export default function AdminDashboard() {
           <div className="p-2 sm:p-3 bg-red-50 rounded-lg text-red-600 flex-shrink-0"><ShieldOff className="w-5 h-5 sm:w-6 sm:h-6" /></div>
           <div className="min-w-0">
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-tight">Blocked (Red)</p>
-            <p className="text-xl sm:text-2xl font-bold text-gray-900">{data.stats.red}</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">{data?.stats?.red || 0}</p>
           </div>
         </div>
 
@@ -166,7 +185,7 @@ export default function AdminDashboard() {
           <div className="p-2 sm:p-3 bg-purple-50 rounded-lg text-purple-600 flex-shrink-0"><AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6" /></div>
           <div className="min-w-0">
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide leading-tight">Total Flagged</p>
-            <p className="text-xl sm:text-2xl font-bold text-gray-900">{data.stats.flagged}</p>
+            <p className="text-xl sm:text-2xl font-bold text-gray-900">{data?.stats?.flagged || 0}</p>
           </div>
         </div>
       </div>
@@ -178,7 +197,7 @@ export default function AdminDashboard() {
           <div>
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Avg Fraud Probability</p>
             <p className="text-2xl sm:text-3xl font-bold text-gray-900">
-              {data.stats.avgFraudProb !== null ? `${data.stats.avgFraudProb}%` : 'N/A'}
+              {data?.stats?.avgFraudProb !== null && data?.stats?.avgFraudProb !== undefined ? `${data.stats.avgFraudProb}%` : 'N/A'}
             </p>
           </div>
         </div>

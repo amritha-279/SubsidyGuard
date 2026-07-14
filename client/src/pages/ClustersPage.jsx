@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import axios from 'axios';
 import { AlertTriangle, MapPin, Users, Activity, Eye } from 'lucide-react';
 
@@ -6,11 +7,21 @@ export default function ClustersPage() {
   const [clusters, setClusters] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { fetchClusters(); }, []);
+  useEffect(() => { 
+    fetchClusters(); 
+    
+    const socketURL = import.meta.env.VITE_API_URL || window.location.origin;
+    const socket = io(socketURL);
+    socket.on('cluster_alert_new', () => {
+      fetchClusters();
+    });
+
+    return () => socket.disconnect();
+  }, []);
 
   const fetchClusters = async () => {
     try {
-      const res = await axios.get(`\${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/clusters`);
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/clusters`);
       setClusters(res.data.clusters);
     } catch (error) {
       console.error(error);
@@ -48,11 +59,11 @@ export default function ClustersPage() {
 
         <div className="card text-center flex flex-col justify-center">
           <p className="text-sm font-medium text-gray-500 uppercase">Active Threats</p>
-          <p className="text-4xl font-black text-red-600 my-2">{clusters.length}</p>
+          <p className="text-4xl font-black text-red-600 my-2">{clusters?.length || 0}</p>
         </div>
       </div>
 
-      {clusters.length === 0 ? (
+      {!clusters || clusters.length === 0 ? (
         <div className="card text-center py-16">
           <Activity className="w-12 h-12 text-gray-300 mx-auto mb-3" />
           <p className="text-gray-500 font-medium">No cluster alerts detected</p>

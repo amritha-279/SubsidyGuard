@@ -81,12 +81,13 @@ router.get('/retailer-risk', async (req, res) => {
 
     const retailerMap = {};
     users.forEach(u => {
-      retailerMap[u.shopId] = {
+      const idKey = u.shopId || u.id;
+      retailerMap[idKey] = {
         userId: u.id,
-        retailerId: u.shopId,
-        shopName: u.shopName || u.shopId,
+        retailerId: idKey,
+        shopName: u.shopName || idKey,
         ownerName: u.name,
-        licenseNumber: u.licenseNumber || u.shopId,
+        licenseNumber: u.licenseNumber || idKey,
         mobile: u.mobile,
         email: u.email,
         district: u.district || 'Unknown',
@@ -94,7 +95,7 @@ router.get('/retailer-risk', async (req, res) => {
         registrationDate: u.createdAt,
         status: u.status,
         officerNotes: u.officerNotes || [],
-        clusterAlerts: retailerClusterMap[u.shopId] || [],
+        clusterAlerts: retailerClusterMap[idKey] || [],
         total: 0,
         approved: 0,
         yellow: 0,
@@ -421,7 +422,8 @@ router.patch('/settings/thresholds', async (req, res) => {
     
     // Notify ML service to reload configuration
     try {
-      await axios.post('http://localhost:8000/reload_config');
+      const mlUrl = process.env.ML_SERVICE_URL || 'http://localhost:8000';
+      await axios.post(`${mlUrl}/reload_config`);
     } catch (err) {
       console.warn('Could not reload ML service config:', err.message);
     }
@@ -467,7 +469,49 @@ router.patch('/transaction-approvals/:id', async (req, res) => {
       if (txn) {
         await txn.update({
           status: 'GREEN',
-          reason: 'Excess quantity approved by Agriculture Officer.'
+          reason: 'Excess quantity approved by Agriculture Officer.',
+          isCompleted: true
+        });
+
+        // ── Deduct Stock ────────────────────────────────────────────────────────
+        const retailer = await User.findOne({ where: { shopId: txn.retailerId, role: 'RETAILER' } });
+        if (retailer) {
+          const item = await Inventory.findOne({ 
+            where: { retailerId: retailer.id, fertilizer: txn.fertilizerType } 
+          });
+          if (item) {
+            const beforeQuantity = item.available;
+            const afterQuantity = Math.max(0, item.available - txn.quantity);
+            await item.update({
+              available: afterQuantity,
+              soldToday: item.soldToday + txn.quantity
+            });
+
+            const StockTransaction = (await import('../models/StockTransaction.js')).default;
+            await StockTransaction.create({
+              retailerId: retailer.id,
+              action: 'SALE',
+              fertilizer: txn.fertilizerType,
+              quantity: txn.quantity,
+              beforeQuantity,
+              afterQuantity,
+              user: 'Officer',
+              remarks: `Officer Approved Transaction ${txn.transactionId}`
+            });
+
+            if (req.io) {
+              req.io.emit('inventory_updated', { retailerId: retailer.id });
+            }
+          }
+        }
+      }
+    } else if (status === 'REJECTED') {
+      const txn = await Transaction.findByPk(approvalReq.transactionId);
+      if (txn) {
+        await txn.update({
+          status: 'CANCELLED',
+          reason: 'Excess quantity rejected by Agriculture Officer.',
+          isCompleted: false
         });
       }
     }

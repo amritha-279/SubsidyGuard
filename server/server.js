@@ -50,11 +50,11 @@ app.get('/health', (req, res) => {
 });
 
 // Sync all models to PostgreSQL then start server
-sequelize.sync({ alter: true })
+sequelize.sync()
   .then(() => {
     console.log('PostgreSQL connected and tables synced');
     httpServer.listen(PORT, () => {
-      console.log(`Server running on http://localhost:${PORT}`);
+      console.log(`Server running on port ${PORT}`);
     });
   })
   .catch(err => console.error('Database connection error:', err));

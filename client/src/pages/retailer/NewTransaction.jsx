@@ -46,7 +46,7 @@ export default function NewTransaction() {
   useEffect(() => {
     fetchInventory();
     
-    const socket = io(`\${import.meta.env.VITE_API_URL || 'http://localhost:5000'}`);
+    const socket = io(`\${import.meta.env.VITE_API_URL || ''}`);
     socket.on('inventory_updated', (data) => {
       if (data.retailerId === retailerId) fetchInventory();
     });
@@ -74,7 +74,10 @@ export default function NewTransaction() {
   };
 
   const fetchFarmer = async () => {
-    if (form.aadhaar.length < 12) return;
+    if (form.aadhaar.length !== 12) {
+      alert("Please enter a valid 12-digit Aadhaar number.");
+      return;
+    }
     try {
       const res = await axios.get(`/api/transactions/farmer/${form.aadhaar}`);
       const f = res.data;
@@ -91,7 +94,10 @@ export default function NewTransaction() {
       });
       setFetchedFields(locked);
       if (f.landSize) computeRec({ ...form, landSize: String(f.landSize), cropType: f.cropType || form.cropType });
-    } catch { /* farmer not found — allow manual entry */ }
+    } catch (e) {
+      console.error(e);
+      alert("Farmer not found. Please enter details manually.");
+    }
   };
 
   // Step 1: Verify only — does NOT save the transaction yet
@@ -200,7 +206,7 @@ export default function NewTransaction() {
 
   const riskConfig = {
     GREEN:  { border: 'border-green-400', bg: 'bg-green-50',  icon: <CheckCircle className="w-5 h-5 text-green-600" />,  label: 'LOW RISK — Sale Allowed',                    textColor: 'text-green-700'  },
-    YELLOW: { border: 'border-yellow-400',bg: 'bg-yellow-50', icon: <AlertTriangle className="w-5 h-5 text-yellow-600" />,label: 'MEDIUM RISK — OTP Verification Required',     textColor: 'text-yellow-700' },
+    YELLOW: { border: 'border-yellow-400',bg: 'bg-yellow-50', icon: <AlertTriangle className="w-5 h-5 text-yellow-600" />,label: 'MEDIUM RISK — Officer Approval Required',     textColor: 'text-yellow-700' },
     RED:    { border: 'border-red-400',   bg: 'bg-red-50',    icon: <XCircle className="w-5 h-5 text-red-600" />,        label: 'HIGH RISK — Transaction Blocked',             textColor: 'text-red-700'    },
   };
 
@@ -391,18 +397,7 @@ export default function NewTransaction() {
                   <CheckCircle className="w-4 h-4" /> {completing ? 'Saving…' : 'Complete Sale'}
                 </button>
               )}
-              {result.riskLevel === 'YELLOW' && !otpSent && (
-                <button className="btn btn-secondary gap-2" onClick={() => setOtpSent(true)}>
-                  <Smartphone className="w-4 h-4" /> Send OTP
-                </button>
-              )}
-              {result.riskLevel === 'YELLOW' && otpSent && (
-                <button className="btn btn-primary gap-2" disabled={otp.length < 6 || completing}
-                  onClick={() => handleCompleteSale()}>
-                  <CheckCircle className="w-4 h-4" /> {completing ? 'Saving…' : 'Verify OTP & Complete Sale'}
-                </button>
-              )}
-              {result.riskLevel === 'RED' && (
+              {result.riskLevel === 'YELLOW' && (
                 <button 
                   className={`btn gap-2 ${approvalSent ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'btn-secondary'}`}
                   onClick={handleRequestApproval}

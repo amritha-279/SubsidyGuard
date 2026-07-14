@@ -29,12 +29,7 @@ function ruleStatus(ratio) {
   return 'RED';
 }
 
-// ── Combine rule + ML: take the more severe ───────────────────────────────────
-function combinedStatus(rule, mlRiskLevel) {
-  if (!mlRiskLevel) return rule;
-  const order = { GREEN: 0, YELLOW: 1, RED: 2 };
-  return order[rule] >= order[mlRiskLevel] ? rule : mlRiskLevel;
-}
+
 
 // ── ML service call ───────────────────────────────────────────────────────────
 async function getMLPrediction(payload) {
@@ -281,12 +276,13 @@ router.post('/verify', async (req, res) => {
 
     const mlResult = await getMLPrediction(mlPayload);
 
-    // ── Use recommended_quantity from ML response (authoritative) ─────────────
-    // If ML is down, fall back to the frontend's basic estimate (passed in payload) or requestedQty
-    const recommendedQty = mlResult?.recommended_quantity || req.body.frontend_recommended_qty || requestedQty;
+    // ── Calculate recommended_quantity based on explicit rules ─────────────
+    const baseRates = { Urea: 50, DAP: 40, MOP: 30, NPK: 45, SSP: 35, 'Zinc Sulphate': 10, 'Ammonium Sulphate': 40 };
+    const fertKey = Object.keys(baseRates).find(k => fertilizer_type.startsWith(k)) || 'Urea';
+    const recommendedQty = Math.round(parsedLandSize * (baseRates[fertKey] || 40));
 
-    const quantityRatio = requestedQty / (recommendedQty || requestedQty);
-    const excessPct     = ((quantityRatio - 1) * 100).toFixed(1);
+    const quantityRatio = recommendedQty > 0 ? (requestedQty / recommendedQty) : 1;
+    const excessPct     = recommendedQty > 0 ? ((quantityRatio - 1) * 100).toFixed(1) : '0.0';
 
     // ── Build checks list ─────────────────────────────────────────────────────
     const checks = [];
@@ -359,13 +355,22 @@ router.post('/verify', async (req, res) => {
     }
 
     // ── Final status ──────────────────────────────────────────────────────────
-    const baseRuleStatus = ruleStatus(quantityRatio);
-    const finalStatus    = combinedStatus(baseRuleStatus, mlResult?.risk_level ?? null);
+    const finalStatus = ruleStatus(quantityRatio);
 
-    const reason = mlResult?.reasons?.[0]
-      ?? (finalStatus === 'RED'    ? 'Quantity far exceeds limits. Officer approval required.'
-        : finalStatus === 'YELLOW' ? 'Excess quantity requested. OTP required.'
-        : 'Normal purchase.');
+    if (finalStatus === 'RED') {
+      const blockReason = `Requested quantity exceeds the recommended quantity by ${excessPct}%, which is strictly prohibited. Transaction blocked.`;
+      await saveBlockedTransaction(blockReason);
+      return res.status(400).json({
+        blocked: true,
+        error: blockReason,
+        checks: [...checks, { id: 'excess_red', name: 'Critical Over-limit Detected', passed: false, color: 'red', details: blockReason }],
+        mlResult
+      });
+    }
+
+    let reason = finalStatus === 'YELLOW' 
+      ? `Requested quantity exceeds the recommended quantity by ${excessPct}%, therefore Agriculture Officer approval is required.` 
+      : `Normal purchase within limits.`;
 
     // ── Save transaction on every verify call (once) ─────────────────────────────────
     const transactionId = `TXN${Date.now()}`;
@@ -405,7 +410,10 @@ router.post('/verify', async (req, res) => {
         totalQuantity:   totalQty,
         severity:        'CRITICAL'
       });
+      if (req.io) req.io.emit('cluster_alert_new', { retailerId: retailer_id });
     }
+
+    if (req.io) req.io.emit('transaction_new', { transactionId, status: finalStatus });
 
     res.json({
       transactionId,

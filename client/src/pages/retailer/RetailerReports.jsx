@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import { FileText, Download, Calendar, Loader2, CalendarDays, BarChart2, TrendingUp, AlertTriangle, Eye } from 'lucide-react';
 import axios from 'axios';
 
-const API = `\${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin/reports`;
+const API = `${import.meta.env.VITE_API_URL || ''}/api/admin/reports`;
 
 function toCSV(rows) {
   if (!rows.length) return '';
@@ -75,6 +76,16 @@ const REPORTS = [
 
 export default function RetailerReports() {
   const user = JSON.parse(localStorage.getItem('retailer_user') || '{}');
+  
+  useEffect(() => { 
+    const socketURL = import.meta.env.VITE_API_URL || window.location.origin;
+    const socket = io(socketURL);
+    socket.on('transaction_new', (data) => {
+      // Logic for new transaction updates if needed
+    });
+    return () => socket.disconnect();
+  }, [user]);
+
   const retailerId = user.shopId || user.id || '';
   const retailerName = user.shopName || user.name || 'Retailer';
 

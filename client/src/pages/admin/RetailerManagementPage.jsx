@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import axios from 'axios';
 import { Search, ShieldAlert, CheckCircle2, XCircle, Eye, X, Send } from 'lucide-react';
 
-const API = `\${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin`;
+const API = `${import.meta.env.VITE_API_URL || ''}/api/admin`;
 
 export default function RetailerManagementPage() {
   const [retailers, setRetailers] = useState([]);
@@ -24,7 +25,7 @@ export default function RetailerManagementPage() {
         axios.get(`${API}/stats`)
       ]);
       setRetailers(riskRes.data.rankings);
-      setFiltered(riskRes.data.rankings.filter(r => r.retailerId.toLowerCase().includes(search.toLowerCase())));
+      setFiltered(riskRes.data.rankings.filter(r => (r.retailerId || '').toLowerCase().includes(search.toLowerCase())));
       setTxns(statsRes.data.transactions);
       
       // Update selected modal data if it's open
@@ -38,18 +39,25 @@ export default function RetailerManagementPage() {
 
   useEffect(() => { 
     fetchData(); 
-    // Live updates: polling every 10 seconds
-    const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
+    
+    const socketURL = import.meta.env.VITE_API_URL || window.location.origin;
+    const socket = io(socketURL);
+    
+    const refresh = () => fetchData();
+    socket.on('transaction_new', refresh);
+    socket.on('cluster_alert_new', refresh);
+    socket.on('inventory_updated', refresh);
+
+    return () => socket.disconnect();
   }, []);
 
   useEffect(() => {
-    setFiltered(retailers.filter(r => r.retailerId.toLowerCase().includes(search.toLowerCase())));
+    setFiltered(retailers.filter(r => (r.retailerId || '').toLowerCase().includes(search.toLowerCase())));
   }, [search, retailers]);
 
   useEffect(() => {
     if (selected && selected.userId) {
-      axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/inventory/${selected.userId}`)
+      axios.get(`${import.meta.env.VITE_API_URL || ''}/api/inventory/${selected.userId}`)
         .then(res => setSelectedInventory(res.data.inventory || []))
         .catch(err => console.error('Failed to fetch inventory', err));
     }
@@ -88,9 +96,9 @@ export default function RetailerManagementPage() {
   };
 
   const riskBadge = (level) => {
-    if (level === 'HIGH RISK') return <span className="px-2 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700">{level}</span>;
-    if (level === 'MEDIUM RISK') return <span className="px-2 py-1 text-xs font-bold rounded-full bg-yellow-100 text-yellow-700">{level}</span>;
-    return <span className="px-2 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700">{level}</span>;
+    if (level === 'HIGH RISK') return <span className="inline-block whitespace-nowrap px-2 py-1 text-xs font-bold rounded-full bg-red-100 text-red-700">{level}</span>;
+    if (level === 'MEDIUM RISK') return <span className="inline-block whitespace-nowrap px-2 py-1 text-xs font-bold rounded-full bg-yellow-100 text-yellow-700">{level}</span>;
+    return <span className="inline-block whitespace-nowrap px-2 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700">{level}</span>;
   };
 
   if (loading && retailers.length === 0) return <div className="p-8 text-center text-gray-500">Loading retailers...</div>;

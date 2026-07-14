@@ -1,15 +1,23 @@
 import { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import axios from 'axios';
 import { MapPin, AlertTriangle, Users, ShieldAlert, CheckCircle2, XCircle, Clock } from 'lucide-react';
 
-const API = `\${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin`;
+const API = `${import.meta.env.VITE_API_URL || ''}/api/admin`;
 
 export default function VillageMonitoringPage() {
   const [heatmap, setHeatmap] = useState([]);
   const [clusters, setClusters] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { 
+    fetchData(); 
+    
+    const socketURL = import.meta.env.VITE_API_URL || window.location.origin;
+    const socket = io(socketURL);
+    socket.on('transaction_new', () => fetchData());
+    return () => socket.disconnect();
+  }, []);
 
   const fetchData = async () => {
     try {

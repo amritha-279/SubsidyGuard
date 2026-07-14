@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import axios from 'axios';
 import { CheckCircle2, XCircle, Clock, User, Store } from 'lucide-react';
 
-const API = `\${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin`;
+const API = `${import.meta.env.VITE_API_URL || ''}/api/admin`;
 
 export default function ApprovalCenterPage() {
   const [pending, setPending] = useState([]);
@@ -11,7 +12,14 @@ export default function ApprovalCenterPage() {
   const [loading, setLoading] = useState(true);
   const [acting, setActing] = useState(null);
 
-  useEffect(() => { fetchRetailers(); }, []);
+  useEffect(() => { 
+    fetchRetailers(); 
+    
+    const socketURL = import.meta.env.VITE_API_URL || window.location.origin;
+    const socket = io(socketURL);
+    socket.on('transaction_new', () => fetchRetailers());
+    return () => socket.disconnect();
+  }, []);
 
   const fetchRetailers = async () => {
     setLoading(true);

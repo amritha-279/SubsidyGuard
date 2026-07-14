@@ -21,7 +21,7 @@ export default function RetailerNotifications() {
     if (!retailerId) return;
     Promise.all([
       axios.get('/api/admin/stats', { params: { retailer_id: retailerId } }),
-      axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/notifications/${retailerId}`)
+      axios.get(`${import.meta.env.VITE_API_URL || ''}/api/notifications/${retailerId}`)
     ]).then(([res, stateRes]) => {
       const states = stateRes.data.states || [];
       const stateMap = {};
@@ -47,7 +47,7 @@ export default function RetailerNotifications() {
 
   const markRead = async id => {
     try {
-      await axios.patch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/notifications/${retailerId}/${id}`, { isRead: true });
+      await axios.patch(`${import.meta.env.VITE_API_URL || ''}/api/notifications/${retailerId}/${id}`, { isRead: true });
       setNotifs(p => p.map(n => n.id === id ? { ...n, read: true } : n));
     } catch (e) { console.error('Failed to mark read', e); }
   };
@@ -56,14 +56,14 @@ export default function RetailerNotifications() {
     try {
       const unreadIds = notifs.filter(n => !n.read).map(n => n.id);
       if (unreadIds.length === 0) return;
-      await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/notifications/${retailerId}/mark-all-read`, { notificationIds: unreadIds });
+      await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/notifications/${retailerId}/mark-all-read`, { notificationIds: unreadIds });
       setNotifs(p => p.map(n => ({ ...n, read: true })));
     } catch (e) { console.error('Failed to mark all read', e); }
   };
   
   const del = async id => {
     try {
-      await axios.patch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/notifications/${retailerId}/${id}`, { isDeleted: true });
+      await axios.patch(`${import.meta.env.VITE_API_URL || ''}/api/notifications/${retailerId}/${id}`, { isDeleted: true });
       setNotifs(p => p.filter(n => n.id !== id));
     } catch (e) { console.error('Failed to delete', e); }
   };

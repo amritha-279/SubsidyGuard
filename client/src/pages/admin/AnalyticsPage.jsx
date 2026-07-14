@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import axios from 'axios';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend, RadarChart, Radar, PolarGrid, PolarAngleAxis } from 'recharts';
 
-const API = `\${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin`;
+const API = `${import.meta.env.VITE_API_URL || ''}/api/admin`;
 const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#3b82f6'];
 
 export default function AnalyticsPage() {
@@ -14,7 +15,14 @@ export default function AnalyticsPage() {
   const [txns, setTxns] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => { 
+    fetchAll(); 
+    
+    const socketURL = import.meta.env.VITE_API_URL || window.location.origin;
+    const socket = io(socketURL);
+    socket.on('transaction_new', () => fetchAll());
+    return () => socket.disconnect();
+  }, []);
 
   const fetchAll = async () => {
     try {

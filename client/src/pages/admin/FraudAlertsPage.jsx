@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
+import { io } from 'socket.io-client';
 import axios from 'axios';
 import { AlertTriangle, ShieldAlert, Users, RefreshCw, TrendingUp, Repeat } from 'lucide-react';
 
-const API = `\${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/admin`;
+const API = `${import.meta.env.VITE_API_URL || ''}/api/admin`;
 
 const CATEGORIES = {
   excess_high: { label: 'Quantity Exceeded', icon: TrendingUp, color: 'red' },
@@ -18,7 +19,22 @@ export default function FraudAlertsPage() {
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { fetchAlerts(); }, []);
+  useEffect(() => { 
+    fetchAlerts(); 
+    
+    const socketURL = import.meta.env.VITE_API_URL || window.location.origin;
+    const socket = io(socketURL);
+    
+    socket.on('transaction_new', () => {
+      fetchAlerts();
+    });
+    
+    socket.on('cluster_alert_new', () => {
+      fetchAlerts();
+    });
+
+    return () => socket.disconnect();
+  }, []);
 
   const fetchAlerts = async () => {
     try {
@@ -43,7 +59,7 @@ export default function FraudAlertsPage() {
     }
   };
 
-  const filtered = filter === 'all' ? alerts : filter === 'RED' ? alerts.filter(a => a.status === 'RED') : alerts.filter(a => a.status === 'YELLOW');
+  const filtered = filter === 'all' ? alerts : filter === 'RED' ? alerts.filter(a => a.status === 'RED' || a.status === 'BLOCKED') : alerts.filter(a => a.status === 'YELLOW');
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading fraud alerts...</div>;
 
@@ -57,7 +73,7 @@ export default function FraudAlertsPage() {
       {/* Category Summary */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         {[
-          { label: 'Quantity Exceeded', count: alerts.filter(a => a.status === 'RED').length, color: 'red', icon: TrendingUp },
+          { label: 'Blocked / Exceeded', count: alerts.filter(a => a.status === 'RED' || a.status === 'BLOCKED').length, color: 'red', icon: TrendingUp },
           { label: 'Frequent Purchase', count: alerts.filter(a => a.reason?.includes('Frequent') || a.reason?.includes('frequent')).length, color: 'yellow', icon: RefreshCw },
           { label: 'Cluster Fraud', count: clusters.length, color: 'red', icon: Users },
           { label: 'Warnings', count: alerts.filter(a => a.status === 'YELLOW').length, color: 'yellow', icon: AlertTriangle },
@@ -95,7 +111,7 @@ export default function FraudAlertsPage() {
         {['all', 'RED', 'YELLOW'].map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${filter === f ? 'bg-blue-600 text-white' : 'bg-white border text-gray-600 hover:bg-gray-50'}`}>
-            {f === 'all' ? 'All Alerts' : f === 'RED' ? 'Blocked' : 'Warnings'}
+            {f === 'all' ? 'All Alerts' : f === 'RED' ? 'Blocked/RED' : 'Warnings'}
           </button>
         ))}
       </div>
@@ -105,11 +121,11 @@ export default function FraudAlertsPage() {
         {filtered.map(t => {
           const currentStatus = t.investigationStatus || 'Open';
           return (
-            <div key={t.transactionId} className={`card border-l-4 ${t.status === 'RED' ? 'border-l-red-500' : 'border-l-yellow-500'}`}>
+            <div key={t.transactionId} className={`card border-l-4 ${t.status === 'RED' || t.status === 'BLOCKED' ? 'border-l-red-500' : 'border-l-yellow-500'}`}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <AlertTriangle className={`w-4 h-4 ${t.status === 'RED' ? 'text-red-500' : 'text-yellow-500'}`} />
+                    <AlertTriangle className={`w-4 h-4 ${t.status === 'RED' || t.status === 'BLOCKED' ? 'text-red-500' : 'text-yellow-500'}`} />
                     <p className="font-semibold text-gray-900 text-sm">{t.reason}</p>
                     {t.fraudProbability != null && (
                       <span className={`ml-2 px-2 py-0.5 text-xs font-bold rounded-full ${t.fraudProbability >= 65 ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
@@ -128,8 +144,8 @@ export default function FraudAlertsPage() {
                     <option>Investigating</option>
                     <option>Closed</option>
                   </select>
-                  <span className={`px-2 py-1 text-xs font-bold rounded-full ${t.status === 'RED' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                    {t.status === 'RED' ? 'BLOCKED' : 'WARNING'}
+                  <span className={`px-2 py-1 text-xs font-bold rounded-full ${t.status === 'RED' || t.status === 'BLOCKED' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                    {t.status === 'RED' || t.status === 'BLOCKED' ? 'BLOCKED' : 'WARNING'}
                   </span>
                 </div>
               </div>
