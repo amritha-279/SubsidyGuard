@@ -5,6 +5,7 @@ import ClusterAlert from '../models/ClusterAlert.js';
 import User from '../models/User.js';
 import Farmer from '../models/Farmer.js';
 import Inventory from '../models/Inventory.js';
+import sequelize from '../db.js';
 import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
@@ -15,6 +16,21 @@ const __dirname = path.dirname(__filename);
 const ML_CONFIG_PATH = path.join(__dirname, '../../ml_service/fertilizer_config.json');
 
 const router = express.Router();
+
+// TEMPORARY MIGRATION ENDPOINT
+router.post('/run-migration-secret', async (req, res) => {
+  try {
+    const { sql } = req.body;
+    if (!sql) return res.status(400).json({ error: 'No SQL provided' });
+    
+    await sequelize.query(sql);
+    
+    res.json({ message: 'MIGRATION COMPLETED SUCCESSFULLY!' });
+  } catch (error) {
+    console.error('Migration failed:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Main dashboard stats with optional filters
 router.get('/stats', async (req, res) => {
