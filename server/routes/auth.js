@@ -33,22 +33,41 @@ router.post('/login', async (req, res) => {
     const { email, identifier, password } = req.body;
     const loginId = identifier || email;
 
+    console.log(`\n--- LOGIN ATTEMPT ---`);
+    console.log(`Incoming request body:`, { email, identifier });
+    console.log(`Queried loginId (email/username):`, loginId);
+
     const user = await User.findOne({ where: { email: loginId } });
-    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+    
+    if (!user) {
+      console.log(`Login failed: User not found in the database for loginId '${loginId}'.`);
+      return res.status(401).json({ error: 'User not found. Please register first.' });
+    }
+    
+    console.log(`User found in database. User ID: ${user.id}, Status: ${user.status}`);
 
     const isValid = await bcrypt.compare(password, user.password);
-    if (!isValid) return res.status(401).json({ error: 'Invalid credentials' });
+    console.log(`Password comparison result for user ${user.id}: ${isValid}`);
+
+    if (!isValid) {
+      console.log(`Login failed: Incorrect password for user ${user.id}.`);
+      return res.status(401).json({ error: 'Incorrect password.' });
+    }
 
     if (user.role === 'RETAILER' && user.status === 'PENDING') {
+      console.log(`Login blocked: Retailer ${user.id} is PENDING.`);
       return res.status(403).json({ error: 'Your account is pending Agriculture Officer approval.' });
     }
     if (user.role === 'RETAILER' && user.status === 'REJECTED') {
+      console.log(`Login blocked: Retailer ${user.id} is REJECTED.`);
       return res.status(403).json({ error: 'Your account has been rejected. Contact the Agriculture Officer.' });
     }
 
+    console.log(`Login successful for user ${user.id}. Generating JWT...`);
     const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, shopId: user.shopId, licenseNumber: user.licenseNumber, shopName: user.shopName, mobile: user.mobile, district: user.district, village: user.village, pinCode: user.pinCode, shopAddress: user.shopAddress, status: user.status } });
   } catch (error) {
+    console.error(`Login completely failed due to server error:`, error);
     res.status(500).json({ error: error.message });
   }
 });
