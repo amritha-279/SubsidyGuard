@@ -53,7 +53,7 @@ export default function Inventory() {
     
     try {
       if (modal.type === 'add' || modal.type === 'add_new') {
-        await axios.post('/api/inventory/add', {
+        await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/inventory/add', {
           retailerId,
           fertilizer: modal.type === 'add_new' ? formData.fertilizer : modal.item.fertilizer,
           quantity: formData.quantity,
@@ -64,7 +64,7 @@ export default function Inventory() {
           remarks: `Invoice: ${formData.invoiceNumber || 'N/A'}, Date: ${formData.purchaseDate || 'N/A'}. ${formData.remarks}`
         });
       } else {
-        await axios.put('/api/inventory/update', {
+        await axios.put(`${import.meta.env.VITE_API_URL || ''}/api/inventory/update', {
           retailerId,
           fertilizer: modal.item.fertilizer,
           quantity: formData.quantity,

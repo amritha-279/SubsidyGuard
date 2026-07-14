@@ -13,14 +13,14 @@ export default function RetailerProfile() {
   const token = JSON.parse(localStorage.getItem('retailer_user') || '{}').token;
 
   useEffect(() => {
-    fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(data => { setProfile(data); setEditForm(data); })
       .finally(() => setLoading(false));
   }, []);
 
   const handleSave = async () => {
-    const res = await fetch('/api/auth/me', {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/me', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(editForm),
@@ -36,7 +36,7 @@ export default function RetailerProfile() {
   const handlePwSave = async () => {
     if (pw.newPw !== pw.confirm) { alert('Passwords do not match.'); return; }
     if (pw.newPw.length < 6) { alert('Minimum 6 characters required.'); return; }
-    const res = await fetch('/api/auth/change-password', {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/change-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ currentPassword: pw.current, newPassword: pw.newPw }),

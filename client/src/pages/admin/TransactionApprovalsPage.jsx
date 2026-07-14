@@ -12,7 +12,7 @@ export default function TransactionApprovalsPage() {
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const res = await axios.get('/api/admin/transaction-approvals');
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/transaction-approvals');
       setRequests(res.data.requests || []);
     } catch (e) {
       console.error(e);

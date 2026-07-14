@@ -17,7 +17,7 @@ export default function PendingApprovals() {
   const { shopId: retailerId } = JSON.parse(localStorage.getItem('retailer_user') || '{}');
 
   useEffect(() => {
-    axios.get('/api/admin/stats', { params: { retailer_id: retailerId } })
+    axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/stats', { params: { retailer_id: retailerId } })
       .then(res => {
         const flagged = (res.data.transactions || []).filter(t => t.status !== 'GREEN');
         setTransactions(flagged);

@@ -40,7 +40,7 @@ function ForgotFlow({ accentColor, onBack }) {
   const handleSendOtp = async e => {
     e.preventDefault(); setError(''); setLoading(true);
     try {
-      const res = await fetch('/api/auth/forgot-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/forgot-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
       const data = await res.json();
       if (!res.ok) { setError(data.error); return; }
       setStep(2);
@@ -54,7 +54,7 @@ function ForgotFlow({ accentColor, onBack }) {
     if (newPw.length < 6) { setError('Minimum 6 characters required.'); return; }
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, otp, newPassword: newPw }) });
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/reset-password', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, otp, newPassword: newPw }) });
       const data = await res.json();
       if (!res.ok) { setError(data.error); return; }
       setStep(3);
@@ -148,7 +148,7 @@ export default function LoginPage() {
     if (!officerForm.username || !officerForm.password) { setOfficerError('Please enter your username and password.'); return; }
     setOfficerLoading(true);
     try {
-      const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: officerForm.username, password: officerForm.password }) });
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: officerForm.username, password: officerForm.password }) });
       const data = await res.json();
       if (!res.ok) { setOfficerError(data.error || 'Invalid credentials.'); return; }
       if (data.user.role !== 'OFFICER') { setOfficerError('Access denied. Not an officer account.'); return; }
@@ -163,7 +163,7 @@ export default function LoginPage() {
     if (!retailerForm.email || !retailerForm.password) { setRetailerError('Please enter your email and password.'); return; }
     setRetailerLoading(true);
     try {
-      const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: retailerForm.email, password: retailerForm.password }) });
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: retailerForm.email, password: retailerForm.password }) });
       const data = await res.json();
       if (!res.ok) {
         const msg = data.error || '';

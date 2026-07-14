@@ -120,7 +120,7 @@ export default function NewTransaction() {
         officer_approved: 0,
         frontend_recommended_qty: recommendedQty
       };
-      const res = await axios.post('/api/transactions/verify', payload);
+      const res = await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/transactions/verify', payload);
       const d = res.data;
       setRecommendedQty(d.recommendedQuantity ?? recommendedQty);
       const req = parseFloat(form.requestedQty);
@@ -168,7 +168,7 @@ export default function NewTransaction() {
   const handleCompleteSale = async () => {
     setCompleting(true);
     try {
-      await axios.post('/api/transactions/confirm', { transactionId: savedTxnId });
+      await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/transactions/confirm', { transactionId: savedTxnId });
       setSaleComplete(true);
     } catch (err) {
       alert(err.response?.data?.error || 'Could not complete sale. Please try again.');
@@ -178,7 +178,7 @@ export default function NewTransaction() {
   const handleRequestApproval = async () => {
     setRequestingApproval(true);
     try {
-      await axios.post('/api/transactions/request-approval', { transactionId: savedTxnId });
+      await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/transactions/request-approval', { transactionId: savedTxnId });
       setApprovalSent(true);
     } catch (err) {
       alert(err.response?.data?.error || 'Could not send request. Please try again.');

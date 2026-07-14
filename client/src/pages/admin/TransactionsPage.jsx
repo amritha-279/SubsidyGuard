@@ -38,7 +38,7 @@ export default function TransactionsPage() {
 
   const fetchTransactions = async () => {
     try {
-      const res = await axios.get('/api/admin/stats');
+      const res = await axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/stats');
       setTransactions(res.data.transactions || []);
       setFiltered(res.data.transactions || []);
     } catch (e) { console.error(e); }
