@@ -45,6 +45,10 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/notifications', notificationRoutes);
 
+app.get('/', (req, res) => {
+  res.json({ message: 'Welcome to Subsidy Guard API' });
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy', message: 'Subsidy Guard API is running' });
 });
