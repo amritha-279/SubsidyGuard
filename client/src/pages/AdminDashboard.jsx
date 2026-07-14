@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import { Link } from 'react-router-dom';
 import { CheckCircle, Clock, ShieldOff } from 'lucide-react';
+import api from '../api.js';
 
 // AdminDashboard.jsx
 const STATUS_COLORS = { GREEN: '#10b981', YELLOW: '#f59e0b', RED: '#ef4444' };
