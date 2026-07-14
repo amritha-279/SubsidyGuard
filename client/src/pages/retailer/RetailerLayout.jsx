@@ -48,7 +48,7 @@ export default function RetailerLayout() {
   // Always fetch fresh user data from DB
   useEffect(() => {
     if (!token) return;
-    fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(data => {
         setDbUser(data);

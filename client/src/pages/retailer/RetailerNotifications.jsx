@@ -20,7 +20,7 @@ export default function RetailerNotifications() {
   useEffect(() => {
     if (!retailerId) return;
     Promise.all([
-      axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/stats', { params: { retailer_id: retailerId } }),
+      axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/stats`, { params: { retailer_id: retailerId } }),
       axios.get(`${import.meta.env.VITE_API_URL || ''}/api/notifications/${retailerId}`)
     ]).then(([res, stateRes]) => {
       const states = stateRes.data.states || [];

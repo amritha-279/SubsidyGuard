@@ -43,7 +43,7 @@ export default function RetailerRegister() {
     if (form.mobile.length !== 10) { setError('Mobile number must be 10 digits.'); return; }
     setLoading(true);
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/auth/register', {
+      await axios.post(`${import.meta.env.VITE_API_URL || ''}/api/auth/register`, {
         name: form.ownerName,
         email: form.email,
         password: form.password,

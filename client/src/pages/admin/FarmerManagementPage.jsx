@@ -21,7 +21,7 @@ export default function FarmerManagementPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/farmers')
+    axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/farmers`)
       .then(res => setFarmers(res.data.farmers || []))
       .catch(() => {})
       .finally(() => setLoading(false));

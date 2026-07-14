@@ -11,7 +11,7 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
       .then(data => {
         setProfile({
@@ -27,7 +27,7 @@ export default function SettingsPage() {
   const flash = (section) => { setSaved(section); setTimeout(() => setSaved(''), 2500); };
 
   const handleSaveProfile = async () => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/me', {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/me`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(profile),
@@ -41,7 +41,7 @@ export default function SettingsPage() {
   const handleSavePassword = async () => {
     if (passwords.newPass !== passwords.confirm) { alert('Passwords do not match.'); return; }
     if (passwords.newPass.length < 6) { alert('Minimum 6 characters required.'); return; }
-    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/change-password', {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/auth/change-password`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ currentPassword: passwords.current, newPassword: passwords.newPass }),

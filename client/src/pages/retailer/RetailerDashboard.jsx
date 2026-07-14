@@ -29,7 +29,7 @@ export default function RetailerDashboard() {
   const retailerId = retailerUser.shopId || retailerUser.id || '';
 
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/stats', { params: { retailer_id: retailerId } })
+    axios.get(`${import.meta.env.VITE_API_URL || ''}/api/admin/stats`, { params: { retailer_id: retailerId } })
       .then(res => {
         const { stats: s, transactions } = res.data;
         setStats(s);
