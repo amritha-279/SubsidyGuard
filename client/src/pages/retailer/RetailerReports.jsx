@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import { FileText, Download, Calendar, Loader2, CalendarDays, BarChart2, TrendingUp, AlertTriangle, Eye } from 'lucide-react';
+import axios from 'axios';
 
 
 const API = `${import.meta.env.VITE_API_URL || ''}/api/admin/reports`;
