@@ -509,7 +509,7 @@ router.patch('/transaction-approvals/:id', async (req, res) => {
       const txn = await Transaction.findByPk(approvalReq.transactionId);
       if (txn) {
         await txn.update({
-          status: 'CANCELLED',
+          status: 'BLOCKED',
           reason: 'Excess quantity rejected by Agriculture Officer.',
           isCompleted: false
         });

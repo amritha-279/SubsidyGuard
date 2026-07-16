@@ -18,16 +18,24 @@ function toCSV(rows) {
   if (!rows.length) return '';
   const headers = ['Transaction ID','Farmer Aadhaar','Retailer ID','Crop','Fertilizer','Quantity','Recommended Qty','Status','Fraud %','Village','Reason','Date'];
   const lines = rows.map(t => [
-    t.transactionId, t.farmerAadhaar, t.retailerId, t.cropType, t.fertilizerType,
-    t.quantity, t.recommendedQuantity, t.status,
-    t.fraudProbability ?? 'N/A', t.village, `"${(t.reason || '').replace(/"/g, "'")}"`,
-    new Date(t.timestamp).toLocaleString()
+    `"${t.transactionId || ''}"`,
+    `"${t.farmerAadhaar || ''}"`,
+    `"${t.retailerId || ''}"`,
+    `"${t.cropType || ''}"`,
+    `"${t.fertilizerType || ''}"`,
+    `"${t.quantity || 0}"`,
+    `"${t.recommendedQuantity || 0}"`,
+    `"${t.status || ''}"`,
+    `"${t.fraudProbability ?? 'N/A'}"`,
+    `"${t.village || ''}"`,
+    `"${(t.reason || '').replace(/"/g, '""')}"`,
+    `"${new Date(t.timestamp).toLocaleString()}"`
   ].join(','));
   return [headers.join(','), ...lines].join('\n');
 }
 
 function downloadCSV(csv, filename) {
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
